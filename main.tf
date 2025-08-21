@@ -62,19 +62,19 @@ resource "aws_apprunner_service" "app_service" {
   service_name = "randomap-service-${var.student_identifier}"
 
   source_configuration {
-    # ADD THIS BLOCK
     authentication_configuration {
       access_role_arn = aws_iam_role.app_runner_ecr_role.arn
     }
-
-    auto_deployments_enabled = true
+    # We are now letting the CI/CD pipeline handle deployments explicitly.
+    auto_deployments_enabled = false 
     image_repository {
-      image_identifier      = "${aws_ecr_repository.app_repo.repository_url}:latest"
-      image_repository_type = "ECR"
+        # ADDED ":latest" back to this line
+        image_identifier      = "${aws_ecr_repository.app_repo.repository_url}:latest"
+        image_repository_type = "ECR"
 
-      image_configuration {
-        port = "5000"
-      }
+        image_configuration {
+            port = "5000"
+        }
     }
   }
 

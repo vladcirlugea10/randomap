@@ -5,18 +5,16 @@ on:
     branches: [ "master" ]
 
 env:
-  # The stable AWS region we decided on
   AWS_REGION: us-east-1
-  # These use your GitHub Secret to match the names created by Terraform
   ECR_REPOSITORY: randomap-repo-${{ secrets.STUDENT_IDENTIFIER }}
   APP_RUNNER_SERVICE_NAME: randomap-service-${{ secrets.STUDENT_IDENTIFIER }}
 
 jobs:
   deploy:
     name: Deploy
-    runs-on: ubuntu-22.04 # Using a specific LTS version for stability
+    runs-on: ubuntu-22.04
     permissions:
-      id-token: write # Required for secure, keyless AWS authentication (OIDC)
+      id-token: write
       contents: read
 
     steps:
@@ -42,7 +40,6 @@ jobs:
 
       - name: Login to Amazon ECR
         id: login-ecr
-        # Using the correct, modern action name. The previous resolution issue was a temporary GitHub glitch.
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Build, Tag, and Push Image to ECR
@@ -54,3 +51,8 @@ jobs:
           docker build -t $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG --build-arg APP_AUTHOR="${{ secrets.APP_AUTHOR }}" .
           docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Tell App Runner to Deploy the New Image
+        run: |
+          SERVICE_ARN=$(aws apprunner list-services --query "ServiceSummaryList[?ServiceName=='${{ env.APP_RUNNER_SERVICE_NAME }}'].ServiceArn" --output text)
+          aws apprunner start-deployment --service-arn $SERVICE_ARN --source-configuration '{ "ImageRepository": { "ImageIdentifier": "${{ steps.build-image.outputs.image }}" } }'
