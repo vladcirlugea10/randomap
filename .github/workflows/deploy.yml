@@ -2,12 +2,12 @@ name: Build and Deploy Randomap to AWS
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master" ] 
 
 env:
   AWS_REGION: eu-central-1
-  ECR_REPOSITORY: randomap-repo-${{ github.actor }} # Makes repo name unique per user
-  APP_RUNNER_SERVICE_NAME: randomap-service-${{ github.actor }} # Unique service name
+  ECR_REPOSITORY: randomap-repo-${{ github.actor }}
+  APP_RUNNER_SERVICE_NAME: randomap-service-${{ github.actor }}
 
 jobs:
   deploy:
@@ -36,7 +36,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }} # From GitHub Secrets
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -46,7 +46,7 @@ jobs:
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }} # Use the unique commit SHA as the image tag
+          IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -t $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG --build-arg APP_AUTHOR="${{ secrets.APP_AUTHOR }}" .
           docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
