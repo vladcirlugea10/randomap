@@ -55,4 +55,4 @@ jobs:
       - name: Tell App Runner to Deploy the New Image
         run: |
           SERVICE_ARN=$(aws apprunner list-services --query "ServiceSummaryList[?ServiceName=='${{ env.APP_RUNNER_SERVICE_NAME }}'].ServiceArn" --output text)
-          aws apprunner start-deployment --service-arn $SERVICE_ARN --source-configuration '{ "ImageRepository": { "ImageIdentifier": "${{ steps.build-image.outputs.image }}" } }'
+          aws apprunner update-service --service-arn $SERVICE_ARN --source-configuration '{ "ImageRepository": { "ImageIdentifier": "${{ steps.build-image.outputs.image }}" } }'
