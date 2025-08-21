@@ -1,4 +1,4 @@
-name: Debug Action Resolution
+name: Debug Third-Party Action
 
 on:
   push:
@@ -8,8 +8,5 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Test Checkout Action
-        uses: actions/checkout@v4
-
-      - name: Test ECR Login Action
-        uses: aws-actions/login-ecr@v1
+      - name: Test a non-AWS action
+        uses: peter-evans/is-core-changed@v3
