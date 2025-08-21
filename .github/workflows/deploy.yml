@@ -5,9 +5,9 @@ on:
     branches: [ "master" ] 
 
 env:
-  AWS_REGION: eu-central-1
-  ECR_REPOSITORY: randomap-repo-${{ github.actor }}
-  APP_RUNNER_SERVICE_NAME: randomap-service-${{ github.actor }}
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: randomap-repo-${{ secrets.STUDENT_IDENTIFIER }}
+  APP_RUNNER_SERVICE_NAME: randomap-service-${{ secrets.STUDENT_IDENTIFIER }}
 
 jobs:
   deploy:
