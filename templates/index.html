@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Earth Teleporter 🌍 (Leaflet Edition)</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            height: 100vh;
+            background-color: #f0f2f5;
+        }
+        .header {
+            text-align: center;
+            padding: 20px;
+            width: 100%;
+            background-color: #ffffff;
+            border-bottom: 1px solid #ddd;
+        }
+        #teleportBtn {
+            padding: 12px 24px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            background-color: #28a745;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        #teleportBtn:hover {
+            background-color: #218838;
+        }
+        #map {
+            height: 65%; /* Adjusted to make space for the footer */
+            width: 90%;
+            max-width: 1200px;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        footer {
+            margin-top: 20px;
+            color: #555;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Random Earth Teleporter 🌍</h1>
+        <button id="teleportBtn">Teleport!</button>
+    </div>
+    
+    <div id="map"></div>
+
+    <footer>
+        <p>Created by: <strong>{{ author }}</strong></p>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+    
+    <script>
+        // 3. Initialize the map and marker variables
+        let map;
+        let marker;
+
+        // Set the initial location to Timișoara
+        const initialLocation = [45.7606, 21.2267];
+
+        // Initialize the map and set its view to our chosen geographical coordinates and a zoom level
+        map = L.map('map').setView(initialLocation, 13);
+
+        // Add a tile layer to add to our map. We are using OpenStreetMap.
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Add a marker to the map at the initial location
+        marker = L.marker(initialLocation).addTo(map)
+            .bindPopup('You are here... for now!')
+            .openPopup();
+        
+        // Add a click event listener to our button.
+        document.getElementById("teleportBtn").addEventListener("click", () => {
+            // Generate random latitude (-90 to +90) and longitude (-180 to +180).
+            const randomLat = Math.random() * 180 - 90;
+            const randomLng = Math.random() * 360 - 180;
+            const newLocation = [randomLat, randomLng];
+            
+            console.log(`Teleporting to: ${newLocation[0]}, ${newLocation[1]}`);
+
+            // Update the map's view and the marker's position using Leaflet's methods.
+            map.setView(newLocation, 2); // Zoom out to see the new location
+            marker.setLatLng(newLocation);
+        });
+    </script>
+</body>
+</html>
