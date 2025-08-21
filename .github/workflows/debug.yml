@@ -1,4 +1,4 @@
-name: Debug Third-Party Action
+name: Debug Network and Resolution
 
 on:
   push:
@@ -8,5 +8,8 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Test a non-AWS action
-        uses: peter-evans/is-core-changed@v3
+      - name: 1. Test network connectivity to GitHub
+        run: curl -v https://api.github.com
+
+      - name: 2. Test action resolution
+        uses: actions/checkout@v4
