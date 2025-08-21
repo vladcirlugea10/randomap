@@ -1,0 +1,59 @@
+name: Build and Deploy Randomap to AWS
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  AWS_REGION: eu-central-1
+  ECR_REPOSITORY: randomap-repo-${{ github.actor }} # Makes repo name unique per user
+  APP_RUNNER_SERVICE_NAME: randomap-service-${{ github.actor }} # Unique service name
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # Required for secure AWS authentication
+      contents: read
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Unit Tests
+        run: pytest
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }} # From GitHub Secrets
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/login-ecr@v1
+
+      - name: Build, Tag, and Push Image to ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }} # Use the unique commit SHA as the image tag
+        run: |
+          docker build -t $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG --build-arg APP_AUTHOR="${{ secrets.APP_AUTHOR }}" .
+          docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Update and Deploy to AWS App Runner
+        run: |
+          SERVICE_ARN=$(aws apprunner list-services --query "ServiceSummaryList[?ServiceName=='${{ env.APP_RUNNER_SERVICE_NAME }}'].ServiceArn" --output text)
+          aws apprunner update-service --service-arn $SERVICE_ARN --source-configuration '{ "ImageRepository": { "ImageIdentifier": "${{ steps.build-image.outputs.image }}", "ImageRepositoryType": "ECR" } }'
+          aws apprunner start-deployment --service-arn $SERVICE_ARN
