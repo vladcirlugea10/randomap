@@ -20,4 +20,4 @@ ARG APP_AUTHOR="Local Dev"
 ENV APP_AUTHOR=$APP_AUTHOR
 
 # The command to run the application
-CMD ["flask", "run", "--host=0.0.0.0:5000"]
+CMD ["flask", "run", "--host=0.0.0.0", "--port=5000"]
